@@ -1,6 +1,6 @@
 ---
 name: serve-plan
-description: Use whenever you make a plan for the user.
+description: Use whenever you make a plan or report for the user.
 ---
 
 # serve-plan

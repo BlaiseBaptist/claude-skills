@@ -1,6 +1,6 @@
 ---
 name: t3-fleet-onboard
-description: Use when adding a machine to the T3 Code fleet, or when a fleet box is unreachable, half-configured, or failing dispatch — installs the t3code daemon, exposes it on the tailnet, creates the default project, mints an agent bearer, and verifies end to end. Also load before running any `t3` CLI command against a fleet box (it documents the T3_SERVICE_LAUNCHER_CONTEXT trap that makes `t3` fail with ipc-unavailable from inside a t3-hosted session).
+description: Use when onboarding, healing, or running `t3` CLI commands against a T3 Code fleet box.
 ---
 
 # t3-fleet-onboard

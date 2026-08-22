@@ -1,6 +1,6 @@
 ---
 name: fleet-dispatch
-description: Use when dispatching a prompt to an agent on another T3 Code fleet box (archlinux, littlearch, bigarch) from this machine, checking on or interrupting a remote thread, listing a box's projects/threads, or responding to a remote approval prompt. This wraps the T3 Code orchestration HTTP API over the tailnet — use it instead of hand-rolling curl/fetch calls or SSHing in to run `claude` interactively. Requires the box to already be onboarded (see t3-fleet-onboard) with an entry in ~/.config/fleet/hosts.json.
+description: Use when dispatching, checking, or interrupting work on another T3 Code fleet box (archlinux, littlearch, bigarch) over the tailnet.
 ---
 
 # fleet-dispatch

@@ -1,0 +1,31 @@
+{
+  "name": "blaise-skills",
+  "owner": {
+    "name": "Blaise Baptist",
+    "url": "https://github.com/BlaiseBaptist"
+  },
+  "description": "Blaise's Claude Code skills, distributed to the T3 Code fleet.",
+  "plugins": [
+    {
+      "name": "t3-fleet",
+      "source": "./plugins/t3-fleet",
+      "description": "Onboard, heal, dispatch work to, and publish plans from T3 Code fleet boxes over the tailnet.",
+      "category": "infrastructure",
+      "tags": ["t3-code", "tailscale", "fleet"]
+    },
+    {
+      "name": "desktop",
+      "source": "./plugins/desktop",
+      "description": "Sway/Wayland desktop helpers. Only useful on a box with a display.",
+      "category": "desktop",
+      "tags": ["sway", "wayland", "screenshot"]
+    },
+    {
+      "name": "writing",
+      "source": "./plugins/writing",
+      "description": "Prose skills. Vendored third-party content, separately licensed.",
+      "category": "writing",
+      "tags": ["prose", "editing"]
+    }
+  ]
+}

@@ -37,7 +37,7 @@ here directly, so the token never appears in a transcript).
 
 ## Usage
 
-All commands: `node ~/.claude/skills/fleet-dispatch/scripts/fleet.mjs <subcommand> ...`
+All commands: `node ${CLAUDE_PLUGIN_ROOT}/skills/fleet-dispatch/scripts/fleet.mjs <subcommand> ...`
 
 ```
 prompt <host> <project> <text> [--model NAME] [--timeout SECONDS]

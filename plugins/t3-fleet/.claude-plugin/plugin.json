@@ -1,0 +1,7 @@
+{
+  "name": "t3-fleet",
+  "description": "Onboard, heal, dispatch work to, and publish plans from T3 Code fleet boxes over the tailnet.",
+  "author": { "name": "Blaise Baptist" },
+  "repository": "https://github.com/BlaiseBaptist/claude-skills",
+  "license": "MIT"
+}

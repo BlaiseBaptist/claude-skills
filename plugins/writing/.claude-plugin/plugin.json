@@ -1,0 +1,6 @@
+{
+  "name": "writing",
+  "description": "Prose skills. Vendored third-party content, separately licensed.",
+  "author": { "name": "Blaise Baptist" },
+  "repository": "https://github.com/BlaiseBaptist/claude-skills"
+}

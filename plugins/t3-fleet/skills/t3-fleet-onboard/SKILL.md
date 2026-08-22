@@ -87,25 +87,78 @@ being useless.
 
 ## Skills repo
 
-Bring `$H`'s `~/.claude/skills` in sync with the shared repo
-(`https://github.com/BlaiseBaptist/claude-skills`, public — no auth needed).
-Pulls if it's already the right repo, clones fresh if the directory is
-missing/empty, and refuses to touch it (rather than clobbering local work)
-if something else is already there:
+Skills reach `$H` as **plugins** from the `blaise-skills` marketplace
+(`https://github.com/BlaiseBaptist/claude-skills`, public — no auth needed),
+not as a git clone of `~/.claude/skills`. That directory stays free for
+box-local skills.
+
+Both commands are idempotent: `marketplace add` re-registers an existing
+marketplace in place, and `install` on an already-installed plugin is a no-op.
+Use the HTTPS URL rather than the `owner/repo` shorthand — the shorthand
+clones over SSH, and fleet boxes have no GitHub SSH key.
 
 ```sh
 ssh -o BatchMode=yes blaise@$H '
   set -e
-  if [ -d ~/.claude/skills/.git ]; then
-    cd ~/.claude/skills && git pull -q origin main
-  elif [ -e ~/.claude/skills ] && [ -n "$(ls -A ~/.claude/skills 2>/dev/null)" ]; then
-    echo "~/.claude/skills exists and is not the claude-skills repo -- not touching it, resolve manually"
-    exit 1
-  else
-    git clone -q https://github.com/BlaiseBaptist/claude-skills.git ~/.claude/skills
-  fi
-  cd ~/.claude/skills && git log --oneline -1'
+  export PATH="$HOME/.local/bin:$PATH"
+  claude plugin marketplace add https://github.com/BlaiseBaptist/claude-skills.git
+  claude plugin install t3-fleet@blaise-skills --scope user
+  claude plugin list'
 ```
+
+`t3-fleet` is the only plugin every box needs. Add others per box — the
+point of the split is that a headless box doesn't carry desktop skills:
+
+```sh
+# littlearch only (Sway desktop)
+claude plugin install desktop@blaise-skills --scope user
+```
+
+### Keeping it in sync afterwards
+
+Claude Code's background auto-update refreshes marketplaces and installed
+plugins after a session starts, but only after a random delay of up to ten
+minutes — T3-launched turns are routinely shorter than that, so on this fleet
+auto-update fires erratically. Install a user timer to do it on a schedule
+instead:
+
+```sh
+ssh -o BatchMode=yes blaise@$H '
+  set -e
+  mkdir -p ~/.config/systemd/user
+  cat > ~/.config/systemd/user/claude-skills-sync.service <<EOF
+[Unit]
+Description=Sync blaise-skills plugins
+
+[Service]
+Type=oneshot
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/.local/bin/claude plugin marketplace update blaise-skills
+EOF
+  cat > ~/.config/systemd/user/claude-skills-sync.timer <<EOF
+[Unit]
+Description=Sync blaise-skills plugins hourly
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=1h
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+  systemctl --user daemon-reload
+  systemctl --user enable --now claude-skills-sync.timer
+  systemctl --user list-timers claude-skills-sync.timer --no-pager'
+```
+
+`loginctl enable-linger blaise` (step 3) is what lets this run without an
+active login session — it is already set by the time you get here.
+
+Version pinning works the same way it does for T3 itself: with no `version`
+field in `plugin.json`, each plugin tracks the marketplace repo's current
+commit, so every push reaches the fleet on the next sync. Set `version` in
+`plugin.json` if you ever want boxes to hold still until you bump it.
 
 ## Optional: pair the T3 Code site's browser "Connect" button
 
@@ -140,7 +193,7 @@ are fiddly JSON-over-HTTPS with UUID generation and a real secret in the
 loop. Use the script rather than assembling dispatch bodies by hand:
 
 ```sh
-node ~/.claude/skills/t3-fleet-onboard/scripts/onboard.mjs $H
+node ${CLAUDE_PLUGIN_ROOT}/skills/t3-fleet-onboard/scripts/onboard.mjs $H
 ```
 
 Optional flags: `--workspace-root PATH` (default `/home/blaise`), `--title

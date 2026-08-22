@@ -119,8 +119,25 @@ claude plugin install desktop@blaise-skills --scope user
 Claude Code's background auto-update refreshes marketplaces and installed
 plugins after a session starts, but only after a random delay of up to ten
 minutes — T3-launched turns are routinely shorter than that, so on this fleet
-auto-update fires erratically. Install a user timer to do it on a schedule
-instead:
+auto-update fires erratically. Drive it from a user timer instead.
+
+Two things the timer has to get right, both learned the hard way:
+
+- `claude plugin marketplace update` only refreshes the catalog. It does
+  **not** roll installed plugins forward — `claude plugin update <plugin>`
+  does. A timer that runs only the first command reports success forever
+  while every box stays pinned to the version it was installed at.
+- The unit must not point at anything under `${CLAUDE_PLUGIN_ROOT}`. That
+  path carries the plugin version and moves on every update, so a unit
+  referencing it breaks the first time it does its job. Install the sync
+  script to a stable path outside the plugin cache.
+
+Ship the script, then the units:
+
+```sh
+ssh -o BatchMode=yes blaise@$H 'mkdir -p ~/.local/bin && cat > ~/.local/bin/claude-skills-sync && chmod +x ~/.local/bin/claude-skills-sync' \
+  < ${CLAUDE_PLUGIN_ROOT}/skills/t3-fleet-onboard/scripts/claude-skills-sync.sh
+```
 
 ```sh
 ssh -o BatchMode=yes blaise@$H '
@@ -132,8 +149,7 @@ Description=Sync blaise-skills plugins
 
 [Service]
 Type=oneshot
-Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
-ExecStart=%h/.local/bin/claude plugin marketplace update blaise-skills
+ExecStart=%h/.local/bin/claude-skills-sync
 EOF
   cat > ~/.config/systemd/user/claude-skills-sync.timer <<EOF
 [Unit]
@@ -154,6 +170,11 @@ EOF
 
 `loginctl enable-linger blaise` (step 3) is what lets this run without an
 active login session — it is already set by the time you get here.
+
+An update only takes effect in sessions started after it lands; `claude
+plugin update` says as much ("Restart to apply changes"). Long-lived T3
+threads keep the version they launched with, which is the behaviour you
+want mid-task.
 
 Version pinning works the same way it does for T3 itself: with no `version`
 field in `plugin.json`, each plugin tracks the marketplace repo's current

@@ -10,11 +10,8 @@ Onboards (or re-verifies / heals) one machine in the T3 Code fleet. Run from
 this on a healthy box is a no-op health check, and it's also the intended
 fix for an expired bearer (nothing else re-checks that).
 
-Full design context: `/home/blaise/.claude/plans/t3-connect-fleet-design.md`
-("Layer 1 — onboarding a new box"). This skill implements steps 1-7 of that
-runbook. Fleet devices talk to each other over Tailscale directly
-(`tailscale serve`, step 3 below) — T3 Connect (phone-relay pairing) is not
-part of this setup.
+Fleet devices talk to each other over Tailscale directly (`tailscale serve`,
+step 3 below) — T3 Connect (phone-relay pairing) is not part of this setup.
 
 ## Preflight gate — do this before touching anything
 

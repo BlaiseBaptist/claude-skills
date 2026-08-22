@@ -10,8 +10,6 @@ back, over the tailnet HTTPS API (`https://<host>.tail2b35ba.ts.net`). This is
 a plain CLI script invoked via Bash — deliberately not an MCP server (script →
 skill → MCP only if a concrete wall is hit).
 
-Full design context: `/home/blaise/.claude/plans/t3-connect-fleet-design.md`.
-
 ## Prerequisites
 
 - Node.js on PATH (any recent Node with global `fetch`/`crypto.randomUUID` —

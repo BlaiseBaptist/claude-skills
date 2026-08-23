@@ -4,7 +4,10 @@
 # is versioned and moves on every update, so a unit pointing into it would
 # break the first time it worked.
 set -e
-export PATH="$HOME/.local/bin:$PATH"
+# systemd hands a unit PATH=/usr/local/bin:/usr/bin. claude may be under
+# ~/.local/bin, and some boxes (littlearch) have no system node at all, only
+# the Node 24 that onboarding step 1 installs. Reach for both.
+export PATH="$HOME/.local/bin:$HOME/.local/share/t3-node/bin:$PATH"
 
 claude plugin marketplace update blaise-skills
 

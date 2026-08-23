@@ -121,7 +121,7 @@ plugins after a session starts, but only after a random delay of up to ten
 minutes. T3-launched turns are routinely shorter than that, so on this fleet
 it fires erratically. Drive it from a user timer instead.
 
-Two things the timer has to get right:
+Three things the timer has to get right:
 
 - `claude plugin marketplace update` only refreshes the catalog. Rolling
   installed plugins forward takes `claude plugin update <plugin>`. A timer
@@ -131,6 +131,13 @@ Two things the timer has to get right:
   path carries the plugin version and moves on every update, so a unit
   referencing it breaks the first time an update lands. Install the sync
   script to a stable path outside the plugin cache.
+- systemd hands a unit `PATH=/usr/local/bin:/usr/bin`, which is not where
+  everything lives. `claude` sits in `~/.local/bin` on some boxes and
+  `/usr/bin` on others, and littlearch has no system `node` at all, only the
+  Node 24 from step 1. The shipped script prepends both `~/.local/bin` and
+  `~/.local/share/t3-node/bin` for that reason. Check with
+  `systemd-run --user --wait --pipe --quiet /bin/sh -c 'command -v claude; command -v node'`
+  before trusting a new box's timer.
 
 Ship the script, then the units:
 

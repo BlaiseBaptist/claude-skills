@@ -19,5 +19,7 @@ claude plugin list --json | node -e '
     }
   });
 ' | while read -r plugin; do
-  claude plugin update "$plugin" --yes
+  # No --yes: it only matters for marketplace-declared command sources, which
+  # these plugins do not use, and claude 2.1.228 (littlearch) rejects the flag.
+  claude plugin update "$plugin"
 done

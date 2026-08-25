@@ -50,20 +50,20 @@ ssh -o BatchMode=yes blaise@$H '
   ~/.local/share/t3-node/bin/node --version'
 ```
 
-**2. Install the service, pinned version** (`0.0.33`; see "Version pin"
-below, and never `@latest`):
+**2. Install the service** at whatever is current:
 
 ```sh
 ssh -o BatchMode=yes blaise@$H '
   export PATH="$HOME/.local/share/t3-node/bin:$PATH"
-  env -u T3_SERVICE_LAUNCHER_CONTEXT npx -y t3@0.0.33 service install'
+  env -u T3_SERVICE_LAUNCHER_CONTEXT npx -y t3@latest service install'
 ```
 
-> Sequencing warning from the design doc: if archlinux itself isn't already
-> updated to the same pinned version, onboarding a box at a newer version
-> manufactures a CLI↔service skew in the opposite direction. Check
-> archlinux's version first (`t3 --version` / `~/.t3/runtime/versions/`) if
-> this ever drifts from the pin below.
+> Boxes do not need to match each other, but on a single box the CLI you
+> invoke does need to match the service that box is running, or the call
+> fails with `The service launcher started a different t3 version.` Using
+> `t3@latest` for both install and later commands keeps that aligned. To act
+> on a box deliberately left behind, read its running version out of
+> `~/.t3/runtime/versions/` and use that exact version in the `npx` call.
 
 **3. Tailscale serve drop-in** (the installer does not set this; write the
 file directly, because `systemctl --user edit` opens an interactive editor
@@ -197,7 +197,7 @@ fleet dispatch, which already works via the bearer in `hosts.json`.
 ```sh
 ssh -o BatchMode=yes blaise@$H '
   export PATH="$HOME/.local/share/t3-node/bin:$PATH"
-  env -u T3_SERVICE_LAUNCHER_CONTEXT npx -y t3@0.0.33 pair --tailscale --label archlinux-pairing'
+  env -u T3_SERVICE_LAUNCHER_CONTEXT npx -y t3@latest pair --tailscale --label archlinux-pairing'
 ```
 
 Prints a `https://$H.tail2b35ba.ts.net/pair#token=...` URL (plus QR code).
@@ -226,7 +226,7 @@ node ${CLAUDE_PLUGIN_ROOT}/skills/t3-fleet-onboard/scripts/onboard.mjs $H
 
 Optional flags: `--workspace-root PATH` (default `/home/blaise`), `--title
 TITLE` (default `"$H Main"`), `--label LABEL` (default `archlinux-agent`),
-`--t3-version VERSION` (default `0.0.33`), `--skip-verify` (skip step 7;
+`--t3-version VERSION` (default `latest`), `--skip-verify` (skip step 7;
 only use this for a deliberately partial run, e.g. re-minting a token
 without re-testing dispatch).
 
@@ -269,12 +269,15 @@ What it does, and why each guard exists:
 The script exits non-zero (and the skill should report FAILURE, not
 "partially done") if any check fails.
 
-## Version pin
+## Versions
 
-`0.0.33`, hardcoded as `DEFAULT_T3_VERSION` at the top of
-`scripts/onboard.mjs` and in the step 1-4 commands above. Bump both places
-together when moving the fleet to a new version, and update archlinux itself
-first (see the sequencing warning in step 2).
+There is no fleet-wide pin. Every box installs and updates from `latest` on
+its own schedule, so at any moment they may be on different versions, and a
+box running something newer than archlinux is not a fault to correct.
+
+`npx t3@latest service update` is what moves a box forward. Pass
+`--t3-version VERSION` to `onboard.mjs` only to hold one box at a specific
+version deliberately; nothing re-pins it afterwards, so undo it yourself.
 
 ## Secret hygiene
 

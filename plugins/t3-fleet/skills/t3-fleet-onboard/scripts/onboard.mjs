@@ -40,9 +40,9 @@ import { spawnSync } from "node:child_process";
 const ELIGIBLE = new Set(["archlinux", "littlearch", "bigarch", "war"]);
 const SHARED_NEVER_INSTALL = new Set(["nuc", "teddy-computer", "lovelandnuc"]);
 
-// Version-pinned in one place. Bump this (and re-run against archlinux
-// first, per the doc's sequencing warning) to move the fleet.
-const DEFAULT_T3_VERSION = "0.0.33";
+// No fleet-wide pin: boxes track `latest` and update independently.
+// Override with --t3-version only to hold a box at a specific version.
+const DEFAULT_T3_VERSION = "latest";
 
 const CONFIG_PATH =
   process.env.FLEET_CONFIG || path.join(os.homedir(), ".config", "fleet", "hosts.json");

@@ -58,12 +58,12 @@ ssh -o BatchMode=yes blaise@$H '
   env -u T3_SERVICE_LAUNCHER_CONTEXT npx -y t3@latest service install'
 ```
 
-> Boxes do not need to match each other, but on a single box the CLI you
-> invoke does need to match the service that box is running, or the call
-> fails with `The service launcher started a different t3 version.` Using
-> `t3@latest` for both install and later commands keeps that aligned. To act
-> on a box deliberately left behind, read its running version out of
-> `~/.t3/runtime/versions/` and use that exact version in the `npx` call.
+> Boxes need not match each other. Within one box, though, the CLI you
+> invoke must match the service that box runs, or the call fails with `The
+> service launcher started a different t3 version.` Using `t3@latest` for
+> the install and for later commands keeps them aligned. For a box you have
+> deliberately held back, read its running version out of
+> `~/.t3/runtime/versions/` and pass that exact version to `npx`.
 
 **3. Tailscale serve drop-in** (the installer does not set this; write the
 file directly, because `systemctl --user edit` opens an interactive editor
@@ -271,13 +271,14 @@ The script exits non-zero (and the skill should report FAILURE, not
 
 ## Versions
 
-There is no fleet-wide pin. Every box installs and updates from `latest` on
-its own schedule, so at any moment they may be on different versions, and a
-box running something newer than archlinux is not a fault to correct.
+No fleet-wide pin. Every box installs and updates from `latest` on its own
+schedule, so they may sit on different versions at any moment. A box ahead of
+archlinux is working as intended.
 
-`npx t3@latest service update` is what moves a box forward. Pass
-`--t3-version VERSION` to `onboard.mjs` only to hold one box at a specific
-version deliberately; nothing re-pins it afterwards, so undo it yourself.
+`npx t3@latest service update` moves a box forward, and the app can trigger
+the same update over RPC. Pass `--t3-version VERSION` to `onboard.mjs` only
+to hold one box at a specific version on purpose; nothing re-pins it
+afterwards, so undo it yourself.
 
 ## Secret hygiene
 

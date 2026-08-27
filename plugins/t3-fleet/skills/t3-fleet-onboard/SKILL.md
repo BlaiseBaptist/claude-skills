@@ -7,8 +7,12 @@ description: Use when onboarding, healing, or running `t3` CLI commands against 
 
 Onboards (or re-verifies / heals) one machine in the T3 Code fleet. Run from
 `archlinux` over SSH; `$H` is the target hostname. It is idempotent: re-running
-this on a healthy box is a no-op health check, and it's also the intended
-fix for an expired bearer (nothing else re-checks that).
+this on a healthy box is a no-op health check.
+
+Fleet work is plain SSH (`ssh -o BatchMode=yes blaise@$H '<command>'`). There is
+no bearer, no `hosts.json`, and no bundled onboarding script anymore; the old
+`scripts/onboard.mjs` and its `access:write` token mint were removed when
+`fleet-dispatch` went away.
 
 Fleet devices talk to each other over Tailscale directly (`tailscale serve`,
 step 3 below). T3 Connect (phone-relay pairing) is not part of this setup.
@@ -19,8 +23,8 @@ step 3 below). T3 Connect (phone-relay pairing) is not part of this setup.
    eligible (`war` was reclassified from shared to the user's own machine on
    2026-08-12). `nuc`, `teddy-computer`, `lovelandnuc` are **shared machines
    and must never be installed on**, even though some are SSH-reachable.
-   `scripts/onboard.mjs` also enforces this internally and will refuse, but
-   check it yourself first; don't rely only on the script catching it.
+   Nothing enforces this for you now that the bundled script is gone; it is
+   on you to check the target before running any install step.
 2. **Reachability.** Run `tailscale status` and confirm `$H` shows up and isn't
    obviously offline. This is advisory (the status column can be stale);
    the real gate is the SSH attempt itself.
@@ -80,10 +84,11 @@ ssh -o BatchMode=yes blaise@$H '
 ```
 
 **4. Provider CLI: presence isn't enough, it must be logged in.** There's
-no cheap standalone check for this; step 7 check 4 (the `pong` dispatch) is
-the real proof. If that check fails later, come back here: the daemon can be
-`active (running)` with zero working agents and look perfectly healthy while
-being useless.
+no cheap standalone check for this; the `pong` check in "Verify" below
+(`ssh blaise@$H 'claude -p ...'`) is the real proof. If it fails later, come
+back here: the daemon can be `active (running)` with zero working agents and
+look perfectly healthy while being useless. The fix is an interactive login:
+`ssh -t blaise@$H claude`, then `/login`.
 
 ## Skills repo
 
@@ -191,8 +196,8 @@ commit, so every push reaches the fleet on the next sync. Set `version` in
 ## Optional: pair the T3 Code site's browser "Connect" button
 
 For linking a box so the browser/site client can talk to it directly (the
-"Connect" button under site settings). It is not needed for machine-to-machine
-fleet dispatch, which already works via the bearer in `hosts.json`.
+"Connect" button under site settings). It is not needed for fleet work, which
+is plain SSH.
 
 ```sh
 ssh -o BatchMode=yes blaise@$H '
@@ -214,60 +219,64 @@ out of this fleet's setup. If a user asks for a "pairing link" or "pairing
 token" for a fleet box, this `t3 pair --tailscale` command is very likely
 what they mean, not `connect link`.
 
-## Steps 5-7: bundled script (API-heavy, secret-handling, do not hand-roll)
+## Verify (plain SSH, from archlinux)
 
-`project.create`, the bearer mint/rotate, and the four verification checks
-are fiddly JSON-over-HTTPS with UUID generation and a real secret in the
-loop. Use the script rather than assembling dispatch bodies by hand:
+Run all three. Any failure is a failed onboarding run, not a partial success:
+an install that can't prove itself working end to end is a failed run.
+
+**1. Service active:**
 
 ```sh
-node ${CLAUDE_PLUGIN_ROOT}/skills/t3-fleet-onboard/scripts/onboard.mjs $H
+ssh -o BatchMode=yes blaise@$H 'systemctl --user is-active t3code.service'
 ```
 
-Optional flags: `--workspace-root PATH` (default `/home/blaise`), `--title
-TITLE` (default `"$H Main"`), `--label LABEL` (default `archlinux-agent`),
-`--t3-version VERSION` (default `latest`), `--skip-verify` (skip step 7;
-only use this for a deliberately partial run, e.g. re-minting a token
-without re-testing dispatch).
+Expect `active`.
 
-What it does, and why each guard exists:
+**2. Tailscale serve routing the web UI:**
 
-- Step 6 (mint bearer) runs first, over SSH, because steps 5 and 7 both
-  need an authenticated request and there is no bootstrap credential to read
-  the snapshot with otherwise. It lists existing sessions on `$H` for
-  `--label`, revokes any it finds, then mints a fresh one. It rotates rather
-  than stacks, because every CLI-issued token carries `access:write`
-  (root-equivalent on that box) and a naive re-run would otherwise leave
-  orphaned root-equivalent tokens accumulating. The token is written
-  straight into `~/.config/fleet/hosts.json` (mode 0600) and is never
-  printed: not to stdout, not to stderr, not into this transcript.
-- Step 5 (project.create) is snapshot-guarded: it does `GET /snapshot`
-  first and only creates if `workspaceRoot` isn't already present. A second
-  `project.create` at an existing `workspaceRoot` returns a generic 500
-  indistinguishable from a real server error, so the guard checks the
-  snapshot rather than create-and-ignore-the-error. If you see a 400 here,
-  it means `workspaceRoot` doesn't exist yet on `$H`, and the script does not
-  `mkdir` it for you (that's a remote filesystem change outside its scope);
-  do it over SSH and re-run.
-- Step 7 runs all four checks and treats the run as failed if any one of
-  them fails. An install that can't prove itself working end to end is a
-  failed run, not a partial success:
-  1. `systemctl --user is-active t3code.service` → `active`
-  2. `GET /api/orchestration/snapshot` with the bearer → 200 (and, as a
-     control, without a bearer → 401)
-  3. snapshot `projects[]` contains the `workspaceRoot`
-  4. a real dispatch: `thread.create` → `thread.turn.start` *"Reply with
-     exactly: pong"* → poll `latestTurn.state` (not the message list, not an
-     enumerated terminal-state list, just `!== "running"`, with a
-     wall-clock timeout) → read the assistant message text → `thread.delete`
-     regardless of outcome. This is the only check that proves the provider
-     CLI is actually authenticated, and its result must come from the
-     message content: a provider failure ("You're out of usage credits...")
-     is a normal HTTP 200 with a normal-looking assistant message, not an
-     error status.
+```sh
+curl -fsS -o /dev/null -w '%{http_code}\n' https://$H.tail2b35ba.ts.net/
+```
 
-The script exits non-zero (and the skill should report FAILURE, not
-"partially done") if any check fails.
+Expect `200`. On a hang or 502, re-check step 3 (the `T3CODE_TAILSCALE_SERVE`
+drop-in) and `ssh -o BatchMode=yes blaise@$H 'tailscale serve status'`.
+
+**3. Provider CLI actually logged in** — the check that matters, and the one a
+healthy-looking daemon won't give you:
+
+```sh
+ssh -o BatchMode=yes blaise@$H 'timeout 90 claude -p "Reply with exactly: pong"'
+```
+
+The output must contain `pong`. `claude -p` exits 0 even when auth has lapsed
+(`Failed to authenticate: OAuth session expired and could not be refreshed`),
+so read the output, do not trust the exit code. Fix a failure with an
+interactive login: `ssh -t blaise@$H claude`, then `/login`.
+
+## Project for the box
+
+Each box gets one T3 project rooted at its workspace dir (default
+`/home/blaise`, title convention `"$H Main"`). Creating it is no longer
+scripted: open `https://$H.tail2b35ba.ts.net/` and add the project there if it
+isn't already listed.
+
+## Retiring the old bearer
+
+A box onboarded before the SSH switch still has a leftover `access:write`
+session (label `*-agent`) that nothing uses now. List and revoke it over SSH:
+
+```sh
+ssh -o BatchMode=yes blaise@$H '
+  export PATH="$HOME/.local/share/t3-node/bin:$PATH"
+  env -u T3_SERVICE_LAUNCHER_CONTEXT npx -y t3@latest auth session list'
+# then, per stale session id:
+ssh -o BatchMode=yes blaise@$H '
+  export PATH="$HOME/.local/share/t3-node/bin:$PATH"
+  env -u T3_SERVICE_LAUNCHER_CONTEXT npx -y t3@latest auth session revoke <id>'
+```
+
+Once every box's session is revoked, delete `~/.config/fleet/hosts.json` on
+`archlinux`.
 
 ## Versions
 
@@ -276,19 +285,9 @@ schedule, so they may sit on different versions at any moment. A box ahead of
 archlinux is working as intended.
 
 `npx t3@latest service update` moves a box forward, and the app can trigger
-the same update over RPC. Pass `--t3-version VERSION` to `onboard.mjs` only
-to hold one box at a specific version on purpose; nothing re-pins it
-afterwards, so undo it yourself.
-
-## Secret hygiene
-
-- The bearer never appears in this skill's own output, in `SKILL.md`, or in
-  any command the agent runs directly. Only `scripts/onboard.mjs` ever
-  touches the raw token, and only to write it into
-  `~/.config/fleet/hosts.json` (mode 0600).
-- If you ever find yourself about to type a token into a Bash command or
-  print it to check it "looks right", don't. Every step above that needs
-  the token routes it through the script instead.
+the same update over RPC. To hold one box at a specific version on purpose,
+install that exact version (`npx -y t3@<version> service install`); nothing
+re-pins it afterwards, so undo it yourself.
 
 ## `T3_SERVICE_LAUNCHER_CONTEXT` trap
 

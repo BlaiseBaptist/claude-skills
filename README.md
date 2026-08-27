@@ -17,11 +17,11 @@ boxes have no GitHub SSH key. Both commands are idempotent.
 
 | Plugin     | Skills                                          | Install on          |
 | ---------- | ----------------------------------------------- | ------------------- |
-| `t3-fleet` | `fleet-dispatch`, `t3-fleet-onboard`, `serve-plan` | every box         |
+| `t3-fleet` | `t3-fleet-onboard`, `serve-plan`                | every box         |
 | `desktop`  | `screenshot`                                    | boxes with a display |
 | `writing`  | `deslop`                                        | anywhere            |
 
-Plugin skills are namespaced: `/t3-fleet:fleet-dispatch`, not `/fleet-dispatch`.
+Plugin skills are namespaced: `/t3-fleet:serve-plan`, not `/serve-plan`.
 
 ## Layout
 

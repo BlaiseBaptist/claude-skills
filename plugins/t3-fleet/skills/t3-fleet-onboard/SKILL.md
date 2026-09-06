@@ -1,6 +1,6 @@
 ---
 name: t3-fleet-onboard
-description: Use when onboarding, healing, or running `t3` CLI commands against a T3 Code fleet box.
+description: Onboarding, healing, or running `t3` commands on a T3 Code fleet box.
 ---
 
 # t3-fleet-onboard

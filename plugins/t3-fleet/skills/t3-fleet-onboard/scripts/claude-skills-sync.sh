@@ -4,10 +4,12 @@
 # is versioned and moves on every update, so a unit pointing into it would
 # break the first time it worked.
 set -e
-# systemd hands a unit PATH=/usr/local/bin:/usr/bin. claude may be under
-# ~/.local/bin, and some boxes (littlearch) have no system node at all, only
-# the Node 24 that onboarding step 1 installs. Reach for both.
-export PATH="$HOME/.local/bin:$HOME/.local/share/t3-node/bin:$PATH"
+# systemd hands a unit PATH=/usr/local/bin:/usr/bin, and launchd on macOS is
+# no better. claude may be under ~/.local/bin (npm install, the Air) or under
+# /opt/homebrew/bin (cask, blaises-mini), and some boxes (littlearch, both
+# Macs) have no system node at all, only the Node 24 that onboarding step 1
+# installs. Reach for all three; the missing ones cost nothing.
+export PATH="$HOME/.local/bin:$HOME/.local/share/t3-node/bin:/opt/homebrew/bin:$PATH"
 
 claude plugin marketplace update blaise-skills
 

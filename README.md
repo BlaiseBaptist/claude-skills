@@ -17,11 +17,10 @@ boxes have no GitHub SSH key. Both commands are idempotent.
 
 | Plugin     | Skills                                          | Install on          |
 | ---------- | ----------------------------------------------- | ------------------- |
-| `t3-fleet` | `t3-fleet-onboard`, `serve-plan`                | every box         |
+| `t3-fleet` | `t3-fleet-onboard`                              | every box         |
 | `desktop`  | `screenshot`                                    | boxes with a display |
-| `writing`  | `deslop`                                        | anywhere            |
 
-Plugin skills are namespaced: `/t3-fleet:serve-plan`, not `/serve-plan`.
+Plugin skills are namespaced: `/t3-fleet:t3-fleet-onboard`, not `/t3-fleet-onboard`.
 
 ## Layout
 
@@ -47,8 +46,3 @@ Sync runs from a systemd user timer on each box (`claude-skills-sync.timer`);
 see the `t3-fleet-onboard` skill. Claude Code's own background auto-update fires
 after a random delay of up to ten minutes, and T3-launched turns are usually
 shorter than that, so it misses most of them.
-
-## Third-party content
-
-`plugins/writing/skills/deslop` is vendored from an MIT-licensed upstream by
-Stephen D. Turner and keeps its own LICENSE file.

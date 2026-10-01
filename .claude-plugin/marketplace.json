@@ -9,7 +9,7 @@
     {
       "name": "t3-fleet",
       "source": "./plugins/t3-fleet",
-      "description": "Onboard, heal, dispatch work to, and publish plans from T3 Code fleet boxes over the tailnet.",
+      "description": "Onboard, heal, and dispatch work to T3 Code fleet boxes over the tailnet.",
       "category": "infrastructure",
       "tags": ["t3-code", "tailscale", "fleet"]
     },
@@ -19,13 +19,6 @@
       "description": "Sway/Wayland desktop helpers. Only useful on a box with a display.",
       "category": "desktop",
       "tags": ["sway", "wayland", "screenshot"]
-    },
-    {
-      "name": "writing",
-      "source": "./plugins/writing",
-      "description": "Prose skills. Vendored third-party content, separately licensed.",
-      "category": "writing",
-      "tags": ["prose", "editing"]
     }
   ]
 }

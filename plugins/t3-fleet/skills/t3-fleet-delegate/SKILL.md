@@ -10,8 +10,17 @@ machine. The destination's T3 server launches its provider with its own
 authentication and configuration. No T3 source edits or server restarts are
 needed. The helper currently supports **T3 0.0.45** and Python 3.
 
-The helper is `${CLAUDE_PLUGIN_ROOT}/skills/t3-fleet-delegate/scripts/t3-fleet-agent.py`.
-Use this bundled path so the helper follows plugin updates; the older
+Set `SKILL_DIR` in your shell to the directory containing the loaded
+`SKILL.md`, using the absolute skill path supplied by your harness. With the
+shared sync, both agents can also use:
+
+```sh
+SKILL_DIR="$HOME/.agents/skills/t3-fleet-delegate"
+```
+
+Claude invokes this skill as `/t3-fleet:t3-fleet-delegate`; Codex invokes it as
+`$t3-fleet-delegate`. Both read the same files. The helper is
+`$SKILL_DIR/scripts/t3-fleet-agent.py`. Use this bundled path so the helper follows plugin updates; the older
 `~/.local/bin/t3-fleet-agent` convenience copy is not updated by skills sync.
 No helper installation is needed on the destination: the script transmits its
 worker through SSH and calls T3 on `127.0.0.1:3773` there.
@@ -32,7 +41,7 @@ over tailnet IPs while verifying the FQDN's SSH host key.
 Get **target-local** registered workspace paths with:
 
 ```sh
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/t3-fleet-delegate/scripts/t3-fleet-agent.py" archlinux projects
+python3 "$SKILL_DIR/scripts/t3-fleet-agent.py" archlinux projects
 ```
 
 The workspace must already be a registered T3 project on that box. Linux
@@ -70,7 +79,7 @@ diff/design or identify the target-local files and revision to inspect.
 For example, Opus can ask Sol on archlinux:
 
 ```sh
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/t3-fleet-delegate/scripts/t3-fleet-agent.py" archlinux start \
+python3 "$SKILL_DIR/scripts/t3-fleet-agent.py" archlinux start \
   --cwd /home/blaise/T3_code_improvements \
   --provider codex --model gpt-6.1-sol \
   --options '{"reasoningEffort":"high"}' \
@@ -96,8 +105,8 @@ turn state, session status, errors, messages, and `waitTimedOut`. Launch without
 the child running; do not start another copy.
 
 ```sh
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/t3-fleet-delegate/scripts/t3-fleet-agent.py" archlinux wait THREAD_UUID --wait 45
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/t3-fleet-delegate/scripts/t3-fleet-agent.py" archlinux read THREAD_UUID
+python3 "$SKILL_DIR/scripts/t3-fleet-agent.py" archlinux wait THREAD_UUID --wait 45
+python3 "$SKILL_DIR/scripts/t3-fleet-agent.py" archlinux read THREAD_UUID
 ```
 
 `completed` is the persisted turn's completion state. Read its actual answer

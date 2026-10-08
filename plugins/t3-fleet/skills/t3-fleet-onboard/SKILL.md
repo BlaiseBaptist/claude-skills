@@ -5,6 +5,11 @@ description: Onboarding, healing, or running `t3` commands on a T3 Code fleet bo
 
 # t3-fleet-onboard
 
+This skill works in Claude (`/t3-fleet:t3-fleet-onboard`) and Codex
+(`$t3-fleet-onboard`). For the shell commands below, set `SKILL_DIR` to the
+absolute directory containing the loaded `SKILL.md`; shared sync also exposes
+it at `$HOME/.agents/skills/t3-fleet-onboard`.
+
 Onboards (or re-verifies / heals) one machine in the T3 Code fleet. Run from
 `archlinux` over SSH; `$H` is the target hostname. It is idempotent: re-running
 this on a healthy box is a no-op health check.
@@ -282,6 +287,14 @@ claude plugin install desktop@blaise-skills --scope user
 
 ### Keeping it in sync afterwards
 
+The installed Claude plugins are the shared files. After updating them, the
+sync creates managed symlinks in `~/.agents/skills` for Codex, using each
+plugin's actual installed version. Only enabled user plugins from
+`blaise-skills` are shared; desktop skills follow the existing per-box plugin
+choice. Unmanaged skills are preserved and conflicts are reported. The sync
+also refreshes its own stable executable from the updated plugin, so future
+script changes roll out through the same hourly timer. Python 3 is required.
+
 Claude Code's background auto-update refreshes marketplaces and installed
 plugins after a session starts, but only after a random delay of up to ten
 minutes. T3-launched turns are routinely shorter than that, so on this fleet
@@ -309,7 +322,7 @@ Ship the script, then the units:
 
 ```sh
 ssh -o BatchMode=yes blaise@$H 'mkdir -p ~/.local/bin && cat > ~/.local/bin/claude-skills-sync && chmod +x ~/.local/bin/claude-skills-sync' \
-  < ${CLAUDE_PLUGIN_ROOT}/skills/t3-fleet-onboard/scripts/claude-skills-sync.sh
+  < "$SKILL_DIR/scripts/claude-skills-sync.sh"
 ```
 
 ```sh
@@ -351,7 +364,7 @@ runs when the user is logged in, which on these Macs is always.
 
 ```sh
 ssh -o BatchMode=yes blaise@$H 'mkdir -p ~/.local/bin && cat > ~/.local/bin/claude-skills-sync && chmod +x ~/.local/bin/claude-skills-sync' \
-  < ${CLAUDE_PLUGIN_ROOT}/skills/t3-fleet-onboard/scripts/claude-skills-sync.sh
+  < "$SKILL_DIR/scripts/claude-skills-sync.sh"
 ```
 
 ```sh

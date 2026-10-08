@@ -1,6 +1,6 @@
 ---
 name: screenshot
-description: Use proactively whenever you need to visually verify a GUI/visual change yourself.
+description: Inspect or capture screenshots on Blaise's Sway/Wayland desktop when verifying a GUI change or reading a screenshot he captured.
 ---
 
 # Screenshot
@@ -12,7 +12,7 @@ path instead of the clipboard:
 `~/Pictures/screenshot.png`
 
 When the user references "the screenshot" or asks you to look at something they
-just captured, read this file directly with the Read tool rather than asking
+just captured, open this file with your harness's image-viewing tool rather than asking
 them to paste it.
 
 Note: this file is overwritten on every `$mod+F7` capture, so it always reflects
@@ -69,7 +69,7 @@ you, not a generic name like `screenshot`.
 - Output path defaults to `~/Pictures/screenshot-<name>.png` if omitted.
 
 Save to a scratch path (e.g. under `~/Pictures` or the scratchpad directory),
-read it back with the Read tool to inspect it, and delete it afterward if it was
+open it with your harness's image-viewing tool to inspect it, and delete it afterward if it was
 only for verification, not something the user asked to keep.
 
 **GPU-accelerated windows (rviz2, gzclient/gz sim, anything OpenGL) can come

@@ -17,10 +17,11 @@ boxes have no GitHub SSH key. Both commands are idempotent.
 
 | Plugin     | Skills                                          | Install on          |
 | ---------- | ----------------------------------------------- | ------------------- |
-| `t3-fleet` | `t3-fleet-onboard`                              | every box         |
+| `t3-fleet` | `t3-fleet-onboard`, `t3-fleet-delegate`           | every box         |
 | `desktop`  | `screenshot`                                    | boxes with a display |
 
 Plugin skills are namespaced: `/t3-fleet:t3-fleet-onboard`, not `/t3-fleet-onboard`.
+Use `/t3-fleet:t3-fleet-delegate` for cross-machine or cross-model T3 agents.
 
 ## Layout
 

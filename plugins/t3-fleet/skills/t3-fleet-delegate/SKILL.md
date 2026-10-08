@@ -19,7 +19,7 @@ SKILL_DIR="$HOME/.agents/skills/t3-fleet-delegate"
 ```
 
 Claude invokes this skill as `/t3-fleet:t3-fleet-delegate`; Codex invokes it as
-`$t3-fleet-delegate`. Both read the same files. The helper is
+`$t3-fleet:t3-fleet-delegate`. Both read the same files. The helper is
 `$SKILL_DIR/scripts/t3-fleet-agent.py`. Use this bundled path so the helper follows plugin updates; the older
 `~/.local/bin/t3-fleet-agent` convenience copy is not updated by skills sync.
 No helper installation is needed on the destination: the script transmits its

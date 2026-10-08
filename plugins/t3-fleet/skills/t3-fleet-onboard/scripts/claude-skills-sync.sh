@@ -26,7 +26,8 @@ for plugin in plugins:
         subprocess.run(["claude", "plugin", "update", plugin["id"]], check=True)
 
 registry = json.loads((Path.home() / ".claude/plugins/installed_plugins.json").read_text())
-fleet = next(entry for entry in registry["plugins"]["t3-fleet@blaise-skills"] if entry["scope"] == "user")
-helper = Path(fleet["installPath"]) / "skills/t3-fleet-onboard/scripts/share-skills.py"
+fleet = next((entry for entry in registry["plugins"].get("t3-fleet@blaise-skills", []) if entry["scope"] == "user"), None)
+root = Path(fleet["installPath"]) if fleet else Path.home() / ".claude/plugins/marketplaces/blaise-skills/plugins/t3-fleet"
+helper = root / "skills/t3-fleet-onboard/scripts/share-skills.py"
 subprocess.run([sys.executable, str(helper)], check=True)
 PY

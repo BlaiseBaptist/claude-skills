@@ -6,7 +6,7 @@ description: Onboarding, healing, or running `t3` commands on a T3 Code fleet bo
 # t3-fleet-onboard
 
 This skill works in Claude (`/t3-fleet:t3-fleet-onboard`) and Codex
-(`$t3-fleet-onboard`). For the shell commands below, set `SKILL_DIR` to the
+(`$t3-fleet:t3-fleet-onboard`). For the shell commands below, set `SKILL_DIR` to the
 absolute directory containing the loaded `SKILL.md`; shared sync also exposes
 it at `$HOME/.agents/skills/t3-fleet-onboard`.
 

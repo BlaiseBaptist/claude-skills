@@ -22,7 +22,7 @@ boxes have no GitHub SSH key. Both commands are idempotent.
 
 Plugin skills are namespaced: `/t3-fleet:t3-fleet-onboard`, not `/t3-fleet-onboard`.
 Use `/t3-fleet:t3-fleet-delegate` for cross-machine or cross-model T3 agents.
-In Codex, invoke `$t3-fleet-delegate` or `$t3-fleet-onboard`.
+In Codex, invoke `$t3-fleet:t3-fleet-delegate` or `$t3-fleet:t3-fleet-onboard`.
 
 ## Layout
 
